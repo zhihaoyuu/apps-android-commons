@@ -7,6 +7,15 @@
         android:icon="@drawable/menu_ic_round_star_border_24px"
         android:title="@string/menu_bookmark"
         app:showAsAction="always" />
+
+//copy link button
+    <item
+      android:id="@+id/menu_get_url"
+      android:icon="@drawable/menu_link"
+      android:title="@string/menu_get_url"
+      app:showAsAction="always" />
+
+
     <item
         android:id="@+id/menu_share_current_image"
         android:icon="@drawable/menu_ic_share_24dp"

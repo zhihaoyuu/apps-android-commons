@@ -51,6 +51,11 @@ import java.util.Objects;
 import javax.inject.Inject;
 import timber.log.Timber;
 
+
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+
 public class MediaDetailPagerFragment extends CommonsDaggerSupportFragment implements ViewPager.OnPageChangeListener, MediaDetailFragment.Callback {
 
     @Inject BookmarkPicturesDao bookmarkDao;
@@ -172,6 +177,12 @@ public class MediaDetailPagerFragment extends CommonsDaggerSupportFragment imple
         return provider;
     }
 
+    public static void toClipboard(String URL, Context context){
+        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Copied URL", URL);
+        clipboard.setPrimaryClip(clip);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (getActivity() == null) {
@@ -182,34 +193,29 @@ public class MediaDetailPagerFragment extends CommonsDaggerSupportFragment imple
         Media m = provider.getMediaAtPosition(pager.getCurrentItem());
         switch (item.getItemId()) {
 
-            //creating a case for handling the copy link button
-            case R.id.menu_get_url:
-
-                //start
-
-                myClipboard = (ClipboardManager) v.getContext().getSystemService(CLIPBOARD_SERVICE);
-
-
-
-                String url = m.getPageTitle().getCanonicalUri();
-                ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-
-                ClipData clip = ClipData.newPlainText("label", url);
-                clipboard.setPrimaryClip(clip);
-                Toast.makeText(getApplicationContext(), "Link Copied!",
-                    Toast.LENGTH_SHORT).show();
-                return true;
-
-                ClipData clip = ClipData.newRawUri(m.getPageTitle().getCanonicalUri());
-
-
-
             case R.id.menu_bookmark_current_image:
                 boolean bookmarkExists = bookmarkDao.updateBookmark(bookmark);
                 Snackbar snackbar = bookmarkExists ? Snackbar.make(getView(), R.string.add_bookmark, Snackbar.LENGTH_LONG) : Snackbar.make(getView(), R.string.remove_bookmark, Snackbar.LENGTH_LONG);
                 snackbar.show();
                 updateBookmarkState(item);
                 return true;
+
+            //creating a case for handling the copy link button
+            case R.id.menu_get_url:
+                //getting uri
+                // using the same value as the given one for copy URL in dropdown
+
+                final String uri = m.getPageTitle().getMobileUri();
+
+                //creating a toast to help the user know the link has been copied
+                Toast.makeText(requireContext(),"Link copied to clipboard",Toast.LENGTH_SHORT).show();
+                //using the copy function defined above to copy the url to the clipboard
+                toClipboard(uri, requireContext());
+                //updating the state of the copy link button to create easy dinstigution to the user
+                //updateCopyState(item);
+                return true;
+
+
             case R.id.menu_share_current_image:
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.setType("text/plain");
@@ -366,13 +372,12 @@ public class MediaDetailPagerFragment extends CommonsDaggerSupportFragment imple
                 if (m != null) {
                     // Enable default set of actions, then re-enable different set of actions only if it is a failed contrib
                     menu.findItem(R.id.menu_browser_current_image).setEnabled(true).setVisible(true);
+                    //adding a copy link button on the menu bar along with the other bookmark items and so on
+                    menu.findItem(R.id.menu_get_url).setEnabled(true).setVisible(true);
                     menu.findItem(R.id.menu_share_current_image).setEnabled(true).setVisible(true);
                     menu.findItem(R.id.menu_download_current_image).setEnabled(true).setVisible(true);
                     menu.findItem(R.id.menu_bookmark_current_image).setEnabled(true).setVisible(true);
                     menu.findItem(R.id.menu_set_as_wallpaper).setEnabled(true).setVisible(true);
-
-                    //adding a copy link button on the menu bar along with the other bookmark items and so on
-                    menu.findItem(R.id.menu_get_url).setEnabled(true).setVisible(true);
 
                     if (m.getUser() != null) {
                         menu.findItem(R.id.menu_view_user_page).setEnabled(true).setVisible(true);
@@ -410,6 +415,9 @@ public class MediaDetailPagerFragment extends CommonsDaggerSupportFragment imple
                 } else {
                     menu.findItem(R.id.menu_browser_current_image).setEnabled(false)
                             .setVisible(false);
+                    // similarly adding the same copy link here as well and setting it to false
+                    menu.findItem(R.id.menu_get_url).setEnabled(false).setVisible(false);
+
                     menu.findItem(R.id.menu_share_current_image).setEnabled(false)
                             .setVisible(false);
                     menu.findItem(R.id.menu_download_current_image).setEnabled(false)
@@ -418,9 +426,6 @@ public class MediaDetailPagerFragment extends CommonsDaggerSupportFragment imple
                             .setVisible(false);
                     menu.findItem(R.id.menu_set_as_wallpaper).setEnabled(false)
                             .setVisible(false);
-
-                    // similarly adding the same copy link here as well and setting it to false
-                    menu.findItem(R.id.menu_get_url).setEnabled(false).setVisible(false);
                 }
 
                 if (!sessionManager.isUserLoggedIn()) {
@@ -445,6 +450,10 @@ public class MediaDetailPagerFragment extends CommonsDaggerSupportFragment imple
         }
         int icon = isBookmarked ? R.drawable.menu_ic_round_star_filled_24px : R.drawable.menu_ic_round_star_border_24px;
         item.setIcon(icon);
+    }
+
+    private void updateCopyLink(MenuItem item){
+
     }
 
     public void showImage(int i, boolean isWikipediaButtonDisplayed) {

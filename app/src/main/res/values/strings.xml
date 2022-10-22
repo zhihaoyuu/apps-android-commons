@@ -98,6 +98,7 @@
   <string name="provider_contributions">My uploads</string>
   <string name="menu_share">Share</string>
   <string name="menu_view_file_page">View file page</string>
+
   <string name="share_title_hint">Caption (Required)</string>
   <string name="add_caption_toast">Please provide a caption for this file</string>
   <string name="share_description_hint">Description</string>
@@ -318,6 +319,10 @@
   <string name="search_tab_title_media">Media</string>
   <string name="search_tab_title_categories">Categories</string>
   <string name="search_tab_title_depictions">Items</string>
+
+  <!--Getting the link for copy link-->
+  <string name="menu_get_url">Getting the URL</string>
+
 
   <string name="explore_tab_title_featured">Featured</string>
   <string name="explore_tab_title_mobile">Uploaded via mobile</string>
