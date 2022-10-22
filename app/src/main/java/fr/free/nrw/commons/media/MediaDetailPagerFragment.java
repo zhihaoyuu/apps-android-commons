@@ -1,9 +1,13 @@
 package fr.free.nrw.commons.media;
 
+import static androidx.core.content.ContextCompat.getSystemService;
 import static fr.free.nrw.commons.Utils.handleWebUrl;
 
 import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -177,6 +181,29 @@ public class MediaDetailPagerFragment extends CommonsDaggerSupportFragment imple
 
         Media m = provider.getMediaAtPosition(pager.getCurrentItem());
         switch (item.getItemId()) {
+
+            //creating a case for handling the copy link button
+            case R.id.menu_get_url:
+
+                //start
+
+                myClipboard = (ClipboardManager) v.getContext().getSystemService(CLIPBOARD_SERVICE);
+
+
+
+                String url = m.getPageTitle().getCanonicalUri();
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+
+                ClipData clip = ClipData.newPlainText("label", url);
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(getApplicationContext(), "Link Copied!",
+                    Toast.LENGTH_SHORT).show();
+                return true;
+
+                ClipData clip = ClipData.newRawUri(m.getPageTitle().getCanonicalUri());
+
+
+
             case R.id.menu_bookmark_current_image:
                 boolean bookmarkExists = bookmarkDao.updateBookmark(bookmark);
                 Snackbar snackbar = bookmarkExists ? Snackbar.make(getView(), R.string.add_bookmark, Snackbar.LENGTH_LONG) : Snackbar.make(getView(), R.string.remove_bookmark, Snackbar.LENGTH_LONG);
@@ -343,6 +370,10 @@ public class MediaDetailPagerFragment extends CommonsDaggerSupportFragment imple
                     menu.findItem(R.id.menu_download_current_image).setEnabled(true).setVisible(true);
                     menu.findItem(R.id.menu_bookmark_current_image).setEnabled(true).setVisible(true);
                     menu.findItem(R.id.menu_set_as_wallpaper).setEnabled(true).setVisible(true);
+
+                    //adding a copy link button on the menu bar along with the other bookmark items and so on
+                    menu.findItem(R.id.menu_get_url).setEnabled(true).setVisible(true);
+
                     if (m.getUser() != null) {
                         menu.findItem(R.id.menu_view_user_page).setEnabled(true).setVisible(true);
                     }
@@ -369,6 +400,7 @@ public class MediaDetailPagerFragment extends CommonsDaggerSupportFragment imple
                                         .setVisible(false);
                                 menu.findItem(R.id.menu_set_as_wallpaper).setEnabled(false)
                                         .setVisible(false);
+                                menu.findItem(R.id.menu_get_url).setEnabled(false).setVisible(false);
                                 break;
                             case Contribution.STATE_COMPLETED:
                                 // Default set of menu items works fine. Treat same as regular media object
@@ -386,6 +418,9 @@ public class MediaDetailPagerFragment extends CommonsDaggerSupportFragment imple
                             .setVisible(false);
                     menu.findItem(R.id.menu_set_as_wallpaper).setEnabled(false)
                             .setVisible(false);
+
+                    // similarly adding the same copy link here as well and setting it to false
+                    menu.findItem(R.id.menu_get_url).setEnabled(false).setVisible(false);
                 }
 
                 if (!sessionManager.isUserLoggedIn()) {
